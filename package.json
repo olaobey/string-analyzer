@@ -1,0 +1,67 @@
+{
+  "name": "string-analyzer",
+  "version": "1.0.0",
+  "description": "REST API that analyzes strings and stores their computed properties",
+  "main": "index.js",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "typeorm:migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run",
+    "typeorm:sync": "ts-node ./node_modules/typeorm/cli.js schema:sync",
+    "docker:build": "docker build -t string-analyzer .",         
+    "docker:run": "docker run -p 3000:3000 --env-file .env string-analyzer", 
+    "docker:dev": "docker-compose up --build", 
+    "docker:stop": "docker stop $(docker ps -q --filter ancestor=string-analyzer)", 
+    "docker:logs": "docker logs -f $(docker ps -q --filter ancestor=string-analyzer)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/olaobey/string-analyzer.git"
+  },
+  "author": "Ajeigbe Olaoluwa Samuel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/olaobey/string-analyzer/issues"
+  },
+  "homepage": "https://github.com/olaobey/string-analyzer#readme",
+  "dependencies": {
+    "@nestjs/common": "^11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.6",
+    "@nestjs/platform-express": "^11.1.6",
+    "@nestjs/swagger": "^11.2.1",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "rimraf": "^6.0.1",
+    "rxjs": "^7.8.2",
+    "typeorm": "^0.3.27"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
+    "@nestjs/schematics": "^11.0.9",
+    "@nestjs/testing": "^11.1.6",
+    "@types/express": "^5.0.3",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.0",
+    "@types/supertest": "^6.0.3",
+    "eslint": "^9.38.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "jest": "^30.2.0",
+    "prettier": "^3.6.2",
+    "supertest": "^7.1.4",
+    "ts-jest": "^29.4.5",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.3"
+  }
+}
