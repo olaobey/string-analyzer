@@ -35,36 +35,28 @@ let StringsRepository = class StringsRepository {
         return res.affected ?? 0;
     }
     async findAll(filters) {
-        const where = {};
-        if (typeof filters.is_palindrome === 'boolean') {
-            where.is_palindrome = filters.is_palindrome;
+        const qb = this.repo.createQueryBuilder('s').orderBy('s.created_at', 'DESC');
+        const { is_palindrome, min_length, max_length, word_count, contains_character, } = filters ?? {};
+        if (typeof is_palindrome === 'boolean') {
+            qb.andWhere('s.is_palindrome = :is_palindrome', { is_palindrome });
         }
-        if (typeof filters.word_count === 'number') {
-            where.word_count = filters.word_count;
+        if (typeof word_count === 'number') {
+            qb.andWhere('s.word_count = :word_count', { word_count });
         }
-        if (typeof filters.min_length === 'number' && typeof filters.max_length === 'number') {
-            where.length = (0, typeorm_2.Between)(filters.min_length, filters.max_length);
+        if (typeof min_length === 'number' && typeof max_length === 'number') {
+            qb.andWhere('s.length BETWEEN :min AND :max', { min: min_length, max: max_length });
         }
-        else if (typeof filters.min_length === 'number') {
-            where.length = (0, typeorm_2.Between)(filters.min_length, Number.MAX_SAFE_INTEGER);
+        else if (typeof min_length === 'number') {
+            qb.andWhere('s.length >= :min', { min: min_length });
         }
-        else if (typeof filters.max_length === 'number') {
-            where.length = (0, typeorm_2.Between)(0, filters.max_length);
+        else if (typeof max_length === 'number') {
+            qb.andWhere('s.length <= :max', { max: max_length });
         }
-        // contains_character: search values containing that character
-        // Using ILIKE to be case-insensitive
-        if (filters.contains_character) {
-            // We'll post-filter to be exact single char occurrence
-            // but DB pre-filter helps performance
-            // @ts-ignore typeorm type mismatch for ILike
-            where.value = (0, typeorm_2.ILike)(`%${filters.contains_character}%`);
+        if (contains_character && contains_character.length > 0) {
+            qb.andWhere('s.value ILIKE :needle', { needle: `%${contains_character}%` });
         }
-        const data = await this.repo.find({ where, order: { created_at: 'DESC' } });
-        // strict post-filter, if contains_character set
-        const filtered = filters.contains_character
-            ? data.filter((d) => d.value.includes(filters.contains_character))
-            : data;
-        return { data: filtered, count: filtered.length };
+        const [data, count] = await qb.getManyAndCount();
+        return { data, count };
     }
 };
 exports.StringsRepository = StringsRepository;

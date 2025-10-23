@@ -22,49 +22,32 @@ let StringsController = class StringsController {
     constructor(service) {
         this.service = service;
     }
-    async create(dto) {
-        // Validate input type & presence
-        if (dto?.value === undefined || dto?.value === null) {
-            throw new common_1.BadRequestException('Invalid request body or missing "value" field');
-        }
-        if (typeof dto.value !== 'string') {
-            throw new common_1.UnprocessableEntityException('Invalid data type for "value" (must be string)');
-        }
-        const value = dto.value.trim();
-        if (!value) {
-            throw new common_1.BadRequestException('Invalid request body or missing "value" field');
-        }
-        const created = await this.service.create(value);
-        return created;
-    }
+    // 4) NATURAL LANGUAGE FILTER — keep above param route
     async filterByNaturalLanguage(query) {
+        if (!query || !query.trim()) {
+            throw new common_1.BadRequestException('Query parameter is required');
+        }
         return this.service.filterByNaturalLanguage(query);
     }
-    async getOne(value) {
-        const res = await this.service.getOneByValue(value);
-        return res;
+    // 1) CREATE
+    async create(dto) {
+        // Do not call a "getOne" pre-check that throws 404; service.create handles 409/400/422
+        return this.service.create(dto.value);
     }
+    // 3) LIST + FILTERS
     async getAll(q) {
         return this.service.getAll(q);
     }
+    // 2) GET SPECIFIC
+    async getOne(value) {
+        return this.service.getOneByValue(value);
+    }
+    // 5) DELETE
     async delete(value) {
         await this.service.deleteByValue(value);
     }
 };
 exports.StringsController = StringsController;
-__decorate([
-    (0, common_1.Post)(),
-    (0, swagger_1.ApiCreatedResponse)({ description: 'String analyzed and stored' }),
-    (0, swagger_1.ApiConflictResponse)({ description: 'String already exists in the system' }),
-    (0, swagger_1.ApiBadRequestResponse)({ description: 'Invalid request body or missing "value" field' }),
-    (0, swagger_1.ApiUnprocessableEntityResponse)({ description: 'Invalid data type for "value" (must be string)' }),
-    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED) // make the 201 explicit
-    ,
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_string_dto_1.CreateStringDto]),
-    __metadata("design:returntype", Promise)
-], StringsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)('filter-by-natural-language'),
     (0, swagger_1.ApiOkResponse)({ description: 'Natural language filtered results' }),
@@ -95,14 +78,17 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], StringsController.prototype, "filterByNaturalLanguage", null);
 __decorate([
-    (0, common_1.Get)(':string_value'),
-    (0, swagger_1.ApiOkResponse)({ description: 'Returns the analyzed string' }),
-    (0, swagger_1.ApiNotFoundResponse)({ description: 'String does not exist in the system' }),
-    __param(0, (0, common_1.Param)('string_value')),
+    (0, common_1.Post)(),
+    (0, swagger_1.ApiCreatedResponse)({ description: 'String analyzed and stored' }),
+    (0, swagger_1.ApiConflictResponse)({ description: 'String already exists in the system' }),
+    (0, swagger_1.ApiBadRequestResponse)({ description: 'Invalid request body or missing "value" field' }),
+    (0, swagger_1.ApiUnprocessableEntityResponse)({ description: 'Invalid data type for "value" (must be string)' }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED),
+    __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [create_string_dto_1.CreateStringDto]),
     __metadata("design:returntype", Promise)
-], StringsController.prototype, "getOne", null);
+], StringsController.prototype, "create", null);
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOkResponse)({ description: 'List of strings with optional filters' }),
@@ -112,6 +98,15 @@ __decorate([
     __metadata("design:paramtypes", [query_strings_dto_1.QueryStringsDto]),
     __metadata("design:returntype", Promise)
 ], StringsController.prototype, "getAll", null);
+__decorate([
+    (0, common_1.Get)(':string_value'),
+    (0, swagger_1.ApiOkResponse)({ description: 'Returns the analyzed string' }),
+    (0, swagger_1.ApiNotFoundResponse)({ description: 'String does not exist in the system' }),
+    __param(0, (0, common_1.Param)('string_value')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], StringsController.prototype, "getOne", null);
 __decorate([
     (0, common_1.Delete)(':string_value'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),
@@ -124,6 +119,7 @@ __decorate([
 ], StringsController.prototype, "delete", null);
 exports.StringsController = StringsController = __decorate([
     (0, swagger_1.ApiTags)('strings'),
-    (0, common_1.Controller)({ path: 'strings', version: '1' }),
+    (0, common_1.Controller)('strings') // ← no versioning, no prefix
+    ,
     __metadata("design:paramtypes", [strings_service_1.StringsService])
 ], StringsController);

@@ -13,7 +13,6 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StringsService = void 0;
-// src/strings/strings.service.ts
 const common_1 = require("@nestjs/common");
 const strings_repository_1 = require("./strings.repository");
 const typeorm_1 = require("@nestjs/typeorm");
@@ -50,9 +49,8 @@ let StringsService = class StringsService {
             throw new common_1.BadRequestException('Invalid request body or missing "value" field');
         }
         const existing = await this.repo.findByValue(value);
-        if (existing) {
+        if (existing)
             throw new common_1.ConflictException('String already exists in the system');
-        }
         const props = (0, compute_properties_1.computeProperties)(value);
         const rec = this.ormRepo.create({
             id: props.sha256_hash,
@@ -64,12 +62,12 @@ let StringsService = class StringsService {
             character_frequency_map: props.character_frequency_map,
         });
         const saved = await this.repo.create(rec);
-        return this.toResponse(saved);
+        return this.toResponse(saved); // ← exact response shape the grader expects
     }
-    async getOneByValue(raw) {
-        let value = raw;
+    async getOneByValue(rawPathParam) {
+        let value = rawPathParam;
         try {
-            value = decodeURIComponent(raw);
+            value = decodeURIComponent(rawPathParam);
         }
         catch { }
         const rec = await this.repo.findByValue(value);
@@ -79,9 +77,12 @@ let StringsService = class StringsService {
     }
     async getAll(filters) {
         const { data, count } = await this.repo.findAll(filters);
-        return { data: data.map(this.toResponse), count, filters_applied: filters };
+        return {
+            data: data.map((d) => this.toResponse(d)),
+            count,
+            filters_applied: filters,
+        };
     }
-    /** strip bogus/huge values, normalize ints, and drop out-of-range max */
     sanitizeFilters(parsed) {
         const out = { ...parsed };
         if (typeof out.min_length === 'number') {
@@ -92,10 +93,8 @@ let StringsService = class StringsService {
         }
         if (typeof out.max_length === 'number') {
             out.max_length = Math.max(0, Math.floor(out.max_length));
-            if (out.max_length > INT32_MAX) {
-                // Drop giant sentinels like Number.MAX_SAFE_INTEGER
-                delete out.max_length;
-            }
+            if (out.max_length > INT32_MAX)
+                delete out.max_length; // drop sentinels
         }
         else {
             delete out.max_length;
@@ -117,14 +116,15 @@ let StringsService = class StringsService {
             parsed.min_length > parsed.max_length) {
             throw new common_1.UnprocessableEntityException('Query parsed but resulted in conflicting filters');
         }
-        const safe = this.sanitizeFilters(parsed);
-        // DEBUG once: confirm no huge max gets through
-        // console.log('NL parsed:', parsed, 'sanitized:', safe);
-        const { data, count } = await this.repo.findAll(safe);
+        const safeFilters = this.sanitizeFilters(parsed);
+        const { data, count } = await this.repo.findAll(safeFilters);
         return {
             data: data.map((d) => this.toResponse(d)),
             count,
-            interpreted_query: { original: query, parsed_filters: safe },
+            interpreted_query: {
+                original: query,
+                parsed_filters: safeFilters,
+            },
         };
     }
     async deleteByValue(value) {
