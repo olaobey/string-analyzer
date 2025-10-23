@@ -23,16 +23,29 @@ let StringsController = class StringsController {
         this.service = service;
     }
     async create(dto) {
-        return this.service.create(dto.value);
+        // Validate input type & presence
+        if (dto?.value === undefined || dto?.value === null) {
+            throw new common_1.BadRequestException('Invalid request body or missing "value" field');
+        }
+        if (typeof dto.value !== 'string') {
+            throw new common_1.UnprocessableEntityException('Invalid data type for "value" (must be string)');
+        }
+        const value = dto.value.trim();
+        if (!value) {
+            throw new common_1.BadRequestException('Invalid request body or missing "value" field');
+        }
+        const created = await this.service.create(value);
+        return created;
+    }
+    async filterByNaturalLanguage(query) {
+        return this.service.filterByNaturalLanguage(query);
     }
     async getOne(value) {
-        return this.service.getOneByValue(value);
+        const res = await this.service.getOneByValue(value);
+        return res;
     }
     async getAll(q) {
         return this.service.getAll(q);
-    }
-    async filterByNaturalLanguageViaQuery(query) {
-        return this.service.filterByNaturalLanguage(query);
     }
     async delete(value) {
         await this.service.deleteByValue(value);
@@ -45,14 +58,46 @@ __decorate([
     (0, swagger_1.ApiConflictResponse)({ description: 'String already exists in the system' }),
     (0, swagger_1.ApiBadRequestResponse)({ description: 'Invalid request body or missing "value" field' }),
     (0, swagger_1.ApiUnprocessableEntityResponse)({ description: 'Invalid data type for "value" (must be string)' }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.CREATED) // make the 201 explicit
+    ,
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [create_string_dto_1.CreateStringDto]),
     __metadata("design:returntype", Promise)
 ], StringsController.prototype, "create", null);
 __decorate([
+    (0, common_1.Get)('filter-by-natural-language'),
+    (0, swagger_1.ApiOkResponse)({ description: 'Natural language filtered results' }),
+    (0, swagger_1.ApiBadRequestResponse)({ description: 'Unable to parse natural language query' }),
+    (0, swagger_1.ApiUnprocessableEntityResponse)({ description: 'Query parsed but resulted in conflicting filters' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'query',
+        required: true,
+        type: String,
+        examples: {
+            singleWordPalindromes: {
+                summary: 'All single-word palindromic strings',
+                value: 'all single word palindromic strings',
+            },
+            longerThan10: {
+                summary: 'Strings longer than 10 characters',
+                value: 'strings longer than 10 characters',
+            },
+            containsZ: {
+                summary: 'Strings containing the letter z',
+                value: 'strings containing the letter z',
+            },
+        },
+    }),
+    __param(0, (0, common_1.Query)('query')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], StringsController.prototype, "filterByNaturalLanguage", null);
+__decorate([
     (0, common_1.Get)(':string_value'),
     (0, swagger_1.ApiOkResponse)({ description: 'Returns the analyzed string' }),
+    (0, swagger_1.ApiNotFoundResponse)({ description: 'String does not exist in the system' }),
     __param(0, (0, common_1.Param)('string_value')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -67,16 +112,6 @@ __decorate([
     __metadata("design:paramtypes", [query_strings_dto_1.QueryStringsDto]),
     __metadata("design:returntype", Promise)
 ], StringsController.prototype, "getAll", null);
-__decorate([
-    (0, common_1.Get)('filter-by-natural-language/query'),
-    (0, swagger_1.ApiOkResponse)({ description: 'Natural language filtered results' }),
-    (0, swagger_1.ApiBadRequestResponse)({ description: 'Unable to parse natural language query' }),
-    (0, swagger_1.ApiUnprocessableEntityResponse)({ description: 'Query parsed but resulted in conflicting filters' }),
-    __param(0, (0, common_1.Query)('query')),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], StringsController.prototype, "filterByNaturalLanguageViaQuery", null);
 __decorate([
     (0, common_1.Delete)(':string_value'),
     (0, common_1.HttpCode)(common_1.HttpStatus.NO_CONTENT),

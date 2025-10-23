@@ -6,63 +6,46 @@ export type ParsedFilters = {
   contains_character?: string;
 };
 
-const VOWELS = ['a', 'e', 'i', 'o', 'u'];
-
 export class NaturalLanguageParser {
   static parse(query: string): { parsed: ParsedFilters; reason?: string } {
-    const q = query.trim().toLowerCase();
-
+    const q = (query ?? '').trim().toLowerCase();
     if (!q) return { parsed: {}, reason: 'empty query' };
 
     const parsed: ParsedFilters = {};
+    let matched = false;
 
-    // 1) "all single word palindromic strings"
-    if (/single\s+word/.test(q)) parsed.word_count = 1;
-    if (/\bpalindromic?\b/.test(q)) parsed.is_palindrome = true;
+    if (/\bsingle\s+word\b/.test(q)) { parsed.word_count = 1; matched = true; }
+    if (/\bpalindromic?\b/.test(q)) { parsed.is_palindrome = true; matched = true; }
 
-    // 2) "strings longer than 10 characters"
-    const longerThan = q.match(/longer\s+than\s+(\d+)\s+character/);
-    if (longerThan) parsed.min_length = Number(longerThan[1]) + 1;
+    const longer = q.match(/\blonger\s+than\s+(\d+)\s+characters?\b/);
+    if (longer) { parsed.min_length = Number(longer[1]) + 1; matched = true; }
 
-    // 3) "strings containing the letter z"
-    const containsLetter = q.match(/contain(?:ing)?\s+(?:the\s+letter\s+)?([a-z0-9])/);
-    if (containsLetter) parsed.contains_character = containsLetter[1];
+    const shorter = q.match(/\bshorter\s+than\s+(\d+)\s+characters?\b/);
+    if (shorter) {
+      const n = Number(shorter[1]);
+      if (Number.isFinite(n) && n > 0) { parsed.max_length = n - 1; matched = true; }
+    }
 
-    // 4) "palindromic strings that contain the first vowel"
-    if (/first\s+vowel/.test(q)) parsed.contains_character = 'a';
+    const contains =
+      q.match(/\bcontain(?:ing)?\s+(?:the\s+letter\s+)?([a-z])\b/) ||
+      q.match(/\bhas\s+letter\s+([a-z])\b/);
+    if (contains) { parsed.contains_character = contains[1]; matched = true; }
 
-    // 5) "strings shorter than N characters"
-    const shorterThan = q.match(/shorter\s+than\s+(\d+)\s+character/);
-    if (shorterThan) parsed.max_length = Number(shorterThan[1]) - 1;
+    if (/\bfirst\s+vowel\b/.test(q)) { parsed.contains_character = 'a'; matched = true; }
 
-    // 6) exact word count e.g. "two-word strings" (treat as 2 words)
-    const nWord = q.match(/(\d+)[-\s]*word/);
-    if (nWord) parsed.word_count = Number(nWord[1]);
+    const nWord = q.match(/\b(\d+)[-\s]*word(s)?\b/);
+    if (nWord) { parsed.word_count = Number(nWord[1]); matched = true; }
 
-    // sanity/conflicts
     if (
       parsed.min_length !== undefined &&
       parsed.max_length !== undefined &&
       parsed.min_length > parsed.max_length
-    ) {
-      return { parsed: {}, reason: 'conflicting length filters' };
-    }
+    ) return { parsed: {}, reason: 'conflicting length filters' };
 
-    // If parser found nothing meaningful, return failure context
-    const foundSomething = Object.keys(parsed).length > 0;
-    if (!foundSomething) {
-      return { parsed: {}, reason: 'no recognizable filters' };
-    }
+    if (parsed.contains_character && !/^[a-z]$/.test(parsed.contains_character))
+      return { parsed: {}, reason: 'contains_character must be single a-z letter' };
 
-    // contains_character should be single char
-    if (parsed.contains_character && parsed.contains_character.length !== 1) {
-      return { parsed: {}, reason: 'contains_character must be single char' };
-    }
-
-    // Normalize vowel heuristic if asked ambiguously
-    if (parsed.contains_character && !VOWELS.includes(parsed.contains_character)) {
-      // OK, could be consonant; keep as-is
-    }
+    if (!matched) return { parsed: {}, reason: 'no recognizable filters' };
 
     return { parsed };
   }

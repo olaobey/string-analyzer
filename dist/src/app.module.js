@@ -15,6 +15,7 @@ const config_1 = require("@nestjs/config");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_config_1 = __importDefault(require("./config/typeorm.config"));
 const strings_module_1 = require("./strings/strings.module");
+const app_controller_1 = require("./app.controller");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -25,5 +26,7 @@ exports.AppModule = AppModule = __decorate([
             typeorm_1.TypeOrmModule.forRootAsync(typeorm_config_1.default),
             strings_module_1.StringsModule,
         ],
+        controllers: [app_controller_1.AppController],
+        providers: [],
     })
 ], AppModule);
