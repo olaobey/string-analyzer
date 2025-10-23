@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   postgres:
     image: postgres:16-alpine
@@ -12,19 +10,24 @@ services:
       - "5432:5432"
     volumes:
       - sa_pgdata:/var/lib/postgresql/data
-    env_file:
-      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
   api:
-    build: .
+    image: node:20-alpine
     container_name: sa_api
+    working_dir: /usr/src/app
     env_file:
       - .env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "${PORT:-3000}:3000"
-    command: npm run start:dev
+    command: sh -c "npm ci && npm run start:dev"
     volumes:
       - ./:/usr/src/app
       - /usr/src/app/node_modules

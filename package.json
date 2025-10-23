@@ -4,7 +4,7 @@
   "description": "REST API that analyzes strings and stores their computed properties",
   "main": "index.js",
   "scripts": {
-    "start": "nest start",
+    "start": "node dist/main.js",        
     "start:dev": "nest start --watch",
     "build": "nest build",
     "clean": "rimraf dist",
@@ -15,10 +15,10 @@
     "test:cov": "jest --coverage",
     "typeorm:migration:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:run",
     "typeorm:sync": "ts-node ./node_modules/typeorm/cli.js schema:sync",
-    "docker:build": "docker build -t string-analyzer .",         
-    "docker:run": "docker run -p 3000:3000 --env-file .env string-analyzer", 
-    "docker:dev": "docker-compose up --build", 
-    "docker:stop": "docker stop $(docker ps -q --filter ancestor=string-analyzer)", 
+    "docker:build": "docker build -t string-analyzer .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env string-analyzer",
+    "docker:dev": "docker compose up --build",
+    "docker:stop": "docker stop $(docker ps -q --filter ancestor=string-analyzer)",
     "docker:logs": "docker logs -f $(docker ps -q --filter ancestor=string-analyzer)"
   },
   "repository": {
