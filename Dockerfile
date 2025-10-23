@@ -1,33 +1,20 @@
-# ---------- deps stage ----------
-FROM node:20-alpine AS deps
-WORKDIR /app
-COPY package*.json ./
-# Install all dependencies (including dev) for building
-RUN npm ci --include=dev
+# Step 1: Build the app
+FROM node:20-slim AS build
 
-# ---------- build stage ----------
-FROM node:20-alpine AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+
 COPY . .
-# Build the NestJS project
+
+RUN npm install
 RUN npm run build
 
-# ---------- runtime stage ----------
-FROM node:20-alpine AS runner
+# Step 2: Run the app in production
+FROM node:20-slim
+
 WORKDIR /app
-ENV NODE_ENV=production
 
-# Copy only necessary files from builder
-COPY --from=builder /app/dist ./dist
-COPY package*.json ./
+COPY --from=build /app/dist /app
 
-# Install only production dependencies
-RUN npm ci --omit=dev
+RUN npm install --production
 
-# Cloud Run expects the app to listen on $PORT
-ENV PORT=8080
-EXPOSE 8080
-
-# Start the built app
 CMD ["node", "dist/main.js"]

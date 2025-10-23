@@ -4,7 +4,7 @@
   "description": "REST API that analyzes strings and stores their computed properties",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/main.js",        
+    "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "build": "nest build",
     "clean": "rimraf dist",

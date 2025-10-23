@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
 
+  // No global prefix, no versioning → endpoints are exactly /strings...
   app.enableCors();
 
   const config = new DocumentBuilder()
@@ -15,9 +16,8 @@ async function bootstrap() {
   const doc = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/docs', app, doc);
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 8080;
-  await app.listen(port, '0.0.0.0');
-
-  console.log(`🚀 Server running on http://localhost:${port}`);
+  await app.listen(process.env.PORT ? Number(process.env.PORT) : 3000);
+  // Optional: console.log the exact base
+  // console.log(`🚀 API ready on http://localhost:${process.env.PORT ?? 3000} (docs at /docs)`);
 }
 bootstrap();
