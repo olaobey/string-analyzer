@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -15,22 +17,26 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+    env_file:
+      - .env
 
   api:
-    image: node:20-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: sa_api
-    working_dir: /usr/src/app
+    working_dir: /app
     env_file:
       - .env
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - "${PORT:-3000}:3000"
-    command: sh -c "npm ci && npm run start:dev"
+      - "${PORT:-8080}:${PORT:-8080}"
+    command: npm run start:dev
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./:/app
+      - /app/node_modules
 
 volumes:
   sa_pgdata:

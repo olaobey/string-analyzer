@@ -16,18 +16,20 @@ services:
       - .env
 
   api:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: sa_api
     env_file:
       - .env
     depends_on:
       - postgres
     ports:
-      - "${PORT:-3000}:3000"
+      - "${PORT:-8080}:${PORT:-8080}"
     command: npm run start:dev
     volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
+      - ./:/app
+      - /app/node_modules
 
 volumes:
   sa_pgdata:

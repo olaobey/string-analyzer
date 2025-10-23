@@ -16,15 +16,16 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
-# bring only compiled code + package manifests
+# Copy only compiled code + manifests
 COPY --from=builder /app/dist ./dist
 COPY package*.json ./
 
-# install prod-only deps
+# Install only production dependencies
 RUN npm ci --omit=dev
 
-# default port (override with PORT env)
-ENV PORT=3000
-EXPOSE 3000
+# Cloud Run expects this
+ENV PORT=8080
+EXPOSE 8080
 
+# Start the NestJS app
 CMD ["node", "dist/main.js"]

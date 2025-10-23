@@ -1,8 +1,32 @@
+# Dependencies
 node_modules
-dist
-.log
-.env
-.git
 npm-debug.log
-Dockerfile
+yarn-error.log
+
+# Build output
+dist
+
+# Environment & secrets
+.env
+*.env
+.env.*
+
+# Logs
+*.log
+logs
+pids
+*.pid
+*.seed
+
+# Version control
+.git
+.gitignore
+
+# Docker / local configs
 docker-compose.yml
+
+# Editor / system files
+.vscode
+.idea
+.DS_Store
+Thumbs.db
