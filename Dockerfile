@@ -26,7 +26,7 @@ RUN npm install --omit=dev
 COPY --from=build /app/dist ./dist
 
 # Expose port (Cloud Run will inject $PORT)
-EXPOSE 3000
+EXPOSE 8080
 
 # ✅ Start the app using the compiled files
 CMD ["node", "dist/main.js"]
