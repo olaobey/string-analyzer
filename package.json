@@ -7,7 +7,7 @@
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "build": "npx nest build",
-    "postinstall": "npm run build", 
+    "postinstall": "npm run build",
     "clean": "rimraf dist",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
@@ -34,7 +34,6 @@
   "homepage": "https://github.com/olaobey/string-analyzer#readme",
   "dependencies": {
     "@nestjs/common": "^11.1.6",
-    "@nestjs/cli": "^11.0.10",
     "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.1.6",
     "@nestjs/platform-express": "^11.1.6",
@@ -49,6 +48,7 @@
     "typeorm": "^0.3.27"
   },
   "devDependencies": {
+    "@nestjs/cli": "^11.0.10",
     "@nestjs/schematics": "^11.0.9",
     "@nestjs/testing": "^11.1.6",
     "@types/express": "^5.0.3",
