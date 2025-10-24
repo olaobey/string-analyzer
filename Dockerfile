@@ -1,32 +1,37 @@
-# ---------- Build Stage ----------
+# ---------- build stage ----------
 FROM node:20-slim AS build
 
 WORKDIR /app
 
-# Copy dependency files and install everything
+# Copy package.json and package-lock.json
 COPY package*.json ./
-RUN npm install
 
-# Copy source code and build it
+# Install all dependencies (dev included)
+RUN npm ci
+
+# Copy source code
 COPY . .
+
+# Build the app
 RUN npm run build
 
-# ---------- Runtime Stage ----------
+# ---------- runtime stage ----------
 FROM node:20-slim
 
 WORKDIR /app
 
-# ✅ Copy package files first
-COPY package*.json ./
-
-# ✅ Install only production dependencies
-RUN npm install --omit=dev
-
-# ✅ Copy the compiled dist files
+# Copy only built files
 COPY --from=build /app/dist ./dist
 
-# Expose port (Cloud Run will inject $PORT)
+# Copy package.json and package-lock.json to install prod dependencies
+COPY package*.json ./
+
+# Install production dependencies only
+RUN npm ci --omit=dev
+
+# Cloud Run listens on $PORT
+ENV PORT 8080
 EXPOSE 8080
 
-# ✅ Start the app using the compiled files
+# Start the app
 CMD ["node", "dist/main.js"]
