@@ -16,7 +16,7 @@ async function bootstrap() {
   const doc = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('/docs', app, doc);
 
-  const port = process.env.PORT ? Number(process.env.PORT) : 3000;
+  const port = process.env.PORT ? Number(process.env.PORT) : 8080;
 
   // ✅ Cloud Run fix — listen on all network interfaces
   await app.listen(port, '0.0.0.0');
