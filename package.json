@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "REST API that analyzes strings and stores their computed properties",
   "main": "index.js",
+  "engines": {
+  "node": ">=18.0.0"
+},  
   "scripts": {
+    "build": "nest build",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
-    "build": "npx nest build",
-    "postinstall": "npm run build",
     "clean": "rimraf dist",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
