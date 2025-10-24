@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
-    "build": "nest build",
-    "postinstall": "npm run build",
+    "build": "npx nest build",
+    "postinstall": "npm run build", 
     "clean": "rimraf dist",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "lint": "eslint \"{src,test}/**/*.ts\" --max-warnings=0",
